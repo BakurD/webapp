@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DeFi Tracker</title>
+  <title>DeFi Portfolio Tracker</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -30,6 +30,7 @@
       top: 0;
       z-index: 100;
       border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+      backdrop-filter: blur(10px);
     }
 
     .header h1 {
@@ -39,53 +40,44 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      margin-bottom: 8px;
     }
 
-    .wallet-selector {
-      margin: 16px;
-      padding: 12px;
-      background: rgba(30, 41, 59, 0.8);
-      border-radius: 12px;
-      border: 1px solid rgba(100, 116, 139, 0.2);
+    .wallet-input-container {
+      position: relative;
     }
 
-    .wallet-selector input {
+    .wallet-input {
       width: 100%;
-      padding: 10px 12px;
+      padding: 12px 40px 12px 12px;
       border: 1px solid rgba(100, 116, 139, 0.3);
-      border-radius: 8px;
-      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.8);
       color: #f8fafc;
       font-size: 14px;
     }
 
-    .wallet-selector input:focus {
+    .wallet-input:focus {
       outline: none;
       border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
-    .network-selector {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .network-btn {
-      padding: 6px 12px;
-      border: 1px solid rgba(100, 116, 139, 0.3);
-      border-radius: 8px;
-      background: rgba(15, 23, 42, 0.6);
-      color: #cbd5e1;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .network-btn.active {
+    .search-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border: none;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: white;
-      border-color: #6366f1;
     }
 
     .content {
@@ -96,19 +88,21 @@
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(100, 116, 139, 0.2);
       border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
+      padding: 24px;
+      margin: 16px 0;
       text-align: center;
     }
 
     .total-value h2 {
-      font-size: 14px;
+      font-size: 13px;
       color: #94a3b8;
       margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .total-value .amount {
-      font-size: 32px;
+      font-size: 36px;
       font-weight: 800;
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       -webkit-background-clip: text;
@@ -116,31 +110,66 @@
       background-clip: text;
     }
 
-    .tabs {
+    .network-tabs {
       display: flex;
       gap: 8px;
-      margin-bottom: 16px;
+      margin: 16px 0;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
     }
 
-    .tab-btn {
-      padding: 10px 16px;
+    .network-tab {
+      padding: 8px 16px;
       border: 1px solid rgba(100, 116, 139, 0.3);
       border-radius: 10px;
       background: rgba(15, 23, 42, 0.6);
       color: #cbd5e1;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s;
     }
 
-    .tab-btn.active {
+    .network-tab.active {
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       color: white;
       border-color: #6366f1;
+    }
+
+    .main-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid rgba(100, 116, 139, 0.2);
+      padding-bottom: 8px;
+    }
+
+    .main-tab {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .main-tab.active {
+      color: #6366f1;
+    }
+
+    .main-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     }
 
     .tab-content {
@@ -154,23 +183,60 @@
     .card {
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(100, 116, 139, 0.2);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 18px;
       margin-bottom: 12px;
     }
 
     .card-title {
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section {
+      margin-bottom: 16px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
       color: #cbd5e1;
-      margin-bottom: 12px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      color: #f8fafc;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #6366f1;
+      background: rgba(15, 23, 42, 0.8);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
     .token-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
+      padding: 12px 0;
       border-bottom: 1px solid rgba(100, 116, 139, 0.1);
     }
 
@@ -178,69 +244,48 @@
       border-bottom: none;
     }
 
-    .token-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
     .token-symbol {
-      font-weight: 600;
+      font-weight: 700;
       color: #f8fafc;
+      font-size: 15px;
     }
 
     .token-balance {
       font-size: 14px;
       color: #94a3b8;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #64748b;
-    }
-
-    .spinner {
-      border: 3px solid rgba(99, 102, 241, 0.1);
-      border-top: 3px solid #6366f1;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 12px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      font-weight: 600;
     }
 
     .health-factor {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px;
+      padding: 16px;
       background: rgba(99, 102, 241, 0.1);
-      border-radius: 8px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
 
     .health-factor.danger {
       background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
     }
 
     .health-factor.warning {
       background: rgba(251, 191, 36, 0.1);
+      border-color: rgba(251, 191, 36, 0.3);
     }
 
     .health-factor .label {
       color: #94a3b8;
       font-size: 13px;
+      font-weight: 600;
     }
 
     .health-factor .value {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 24px;
+      font-weight: 800;
       color: #6366f1;
     }
 
@@ -255,27 +300,31 @@
     .position-card {
       background: rgba(15, 23, 42, 0.6);
       border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(100, 116, 139, 0.2);
     }
 
     .position-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
+      align-items: center;
+      margin-bottom: 10px;
     }
 
     .position-pair {
-      font-weight: 600;
+      font-weight: 700;
       color: #f8fafc;
+      font-size: 14px;
     }
 
     .position-status {
-      font-size: 12px;
-      padding: 2px 8px;
+      font-size: 11px;
+      padding: 4px 10px;
       border-radius: 6px;
       background: rgba(34, 197, 94, 0.2);
       color: #86efac;
+      font-weight: 600;
     }
 
     .position-status.out-of-range {
@@ -283,136 +332,312 @@
       color: #fca5a5;
     }
 
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+
+    .spinner {
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-top: 3px solid #6366f1;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .empty-state {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       color: #64748b;
     }
 
     .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      opacity: 0.5;
+      font-size: 56px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     button.primary {
       width: 100%;
       padding: 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       color: white;
-      font-weight: 600;
-      font-size: 14px;
+      font-weight: 700;
+      font-size: 15px;
       cursor: pointer;
       margin-top: 12px;
+      transition: all 0.2s;
+    }
+
+    button.primary:active {
+      transform: scale(0.98);
+    }
+
+    .hint {
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .network-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background: rgba(99, 102, 241, 0.15);
+      border-radius: 6px;
+      font-size: 11px;
+      color: #a5b4fc;
+      font-weight: 600;
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>💼 DeFi Portfolio</h1>
-  </div>
-
-  <div class="wallet-selector">
-    <input
-      id="wallet-input"
-      type="text"
-      placeholder="Enter wallet address (0x...)"
-      value=""
-    />
-    <div class="network-selector">
-      <button class="network-btn active" data-network="ethereum">Ethereum</button>
-      <button class="network-btn" data-network="base">Base</button>
-      <button class="network-btn" data-network="arbitrum">Arbitrum</button>
-      <button class="network-btn" data-network="polygon">Polygon</button>
+    <div class="wallet-input-container">
+      <input
+        id="wallet-input"
+        class="wallet-input"
+        type="text"
+        placeholder="Enter wallet address (0x...)"
+      />
+      <button class="search-btn" id="search-btn">🔍</button>
     </div>
   </div>
 
   <div class="content">
     <div class="total-value" id="total-value" style="display: none;">
-      <h2>Total Portfolio Value</h2>
-      <div class="amount">$0.00</div>
+      <h2>Total Value</h2>
+      <div class="amount" id="total-amount">$0.00</div>
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="wallet">💰 Wallet</button>
-      <button class="tab-btn" data-tab="lp">🏊 LP Positions</button>
-      <button class="tab-btn" data-tab="lending">🏦 Lending</button>
-      <button class="tab-btn" data-tab="triggers">⚙️ Triggers</button>
+    <div class="main-tabs">
+      <button class="main-tab active" data-tab="portfolio">📊 Portfolio</button>
+      <button class="main-tab" data-tab="triggers">⚙️ Alerts</button>
     </div>
 
-    <div id="wallet-tab" class="tab-content active">
-      <div id="wallet-content"></div>
-    </div>
+    <!-- Portfolio Tab -->
+    <div id="portfolio-tab" class="tab-content active">
+      <div class="network-tabs" id="network-tabs">
+        <button class="network-tab active" data-network="ethereum">Ethereum</button>
+        <button class="network-tab" data-network="base">Base</button>
+        <button class="network-tab" data-network="arbitrum">Arbitrum</button>
+        <button class="network-tab" data-network="polygon">Polygon</button>
+      </div>
 
-    <div id="lp-tab" class="tab-content">
-      <div id="lp-content"></div>
-    </div>
-
-    <div id="lending-tab" class="tab-content">
-      <div id="lending-content"></div>
-    </div>
-
-    <div id="triggers-tab" class="tab-content">
-      <div id="triggers-content">
-        <div class="card">
-          <div class="card-title">Health Factor Alert</div>
-          <input id="hf-wallet" type="text" placeholder="Wallet address" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(100,116,139,0.3); background: rgba(15,23,42,0.6); color: #f8fafc; margin-bottom: 12px;" />
-          <input id="hf-pool" type="text" placeholder="Aave Pool address" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(100,116,139,0.3); background: rgba(15,23,42,0.6); color: #f8fafc; margin-bottom: 12px;" />
-          <input id="hf-threshold" type="number" step="0.01" placeholder="Threshold (e.g. 1.5)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(100,116,139,0.3); background: rgba(15,23,42,0.6); color: #f8fafc; margin-bottom: 12px;" />
-          <select id="hf-network" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(100,116,139,0.3); background: rgba(15,23,42,0.6); color: #f8fafc;">
-            <option value="ethereum">Ethereum</option>
-            <option value="base">Base</option>
-            <option value="arbitrum">Arbitrum</option>
-          </select>
-          <button class="primary" id="save-hf-trigger">Save Alert</button>
+      <div id="portfolio-content">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-text">
+            Enter a wallet address above<br/>to view portfolio
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Triggers Tab -->
+    <div id="triggers-tab" class="tab-content">
+      <div id="active-triggers-list"></div>
+
+      <div class="card">
+        <div class="card-title">⚡ Create New Alert</div>
+
+        <div class="section">
+          <label for="trigger-wallet">Wallet Address</label>
+          <input id="trigger-wallet" type="text" placeholder="0x... (auto-filled)" />
+          <p class="hint">Leave empty to use current wallet</p>
+        </div>
+
+        <div class="section">
+          <label for="trigger-type">Alert Type</label>
+          <select id="trigger-type">
+            <option value="health_factor">Health Factor (Aave)</option>
+            <option value="tick_range">LP Range (Uniswap v3)</option>
+          </select>
+        </div>
+
+        <div id="hf-fields">
+          <div class="section">
+            <label for="aave-pool">Aave Pool Address</label>
+            <input id="aave-pool" type="text" placeholder="0x794a61358D6845594F94dc1DB02A252b5b4814aD" />
+          </div>
+
+          <div class="section">
+            <label for="hf-threshold">Health Factor Threshold</label>
+            <input id="hf-threshold" type="number" step="0.01" placeholder="1.5" value="1.5" />
+            <p class="hint">Alert when HF drops below this value</p>
+          </div>
+        </div>
+
+        <div id="tick-fields" style="display: none;">
+          <div class="section">
+            <label for="pool-address">Uniswap v3 Pool Address</label>
+            <input id="pool-address" type="text" placeholder="0x..." />
+          </div>
+
+          <div class="section">
+            <label for="tick-lower">Tick Lower</label>
+            <input id="tick-lower" type="number" placeholder="-200000" />
+          </div>
+
+          <div class="section">
+            <label for="tick-upper">Tick Upper</label>
+            <input id="tick-upper" type="number" placeholder="200000" />
+          </div>
+        </div>
+
+        <div class="section">
+          <label for="trigger-network">Network</label>
+          <select id="trigger-network">
+            <option value="ethereum">Ethereum</option>
+            <option value="base" selected>Base</option>
+            <option value="arbitrum">Arbitrum</option>
+            <option value="polygon">Polygon</option>
+          </select>
+        </div>
+
+        <button class="primary" id="save-trigger">💾 Save Alert</button>
       </div>
     </div>
   </div>
 
   <script>
     const API_BASE = 'http://localhost:8000/api';
-    let currentNetwork = 'ethereum';
     let currentWallet = '';
+    let currentNetwork = 'ethereum';
+    let telegramUserId = null;
+    let userData = {};
 
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
+
+      const initData = window.Telegram.WebApp.initDataUnsafe;
+      if (initData && initData.user) {
+        telegramUserId = initData.user.id;
+        loadUserData(telegramUserId);
+      }
     }
 
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    async function loadUserData(userId) {
+      try {
+        const response = await fetch(`${API_BASE}/user/${userId}`);
+        userData = await response.json();
+
+        if (userData.wallets && userData.wallets.length > 0) {
+          const firstWallet = userData.wallets[0];
+          document.getElementById('wallet-input').value = firstWallet.address;
+          currentWallet = firstWallet.address;
+          currentNetwork = firstWallet.network;
+
+          document.querySelectorAll('.network-tab').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.network === currentNetwork);
+          });
+
+          loadPortfolio(currentWallet, currentNetwork);
+        }
+
+        renderActiveTriggers();
+      } catch (err) {
+        console.error('Error loading user data:', err);
+      }
+    }
+
+    function renderActiveTriggers() {
+      const container = document.getElementById('active-triggers-list');
+      if (!userData.triggers || userData.triggers.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      let html = '<div class="card"><div class="card-title">📌 Your Active Alerts</div>';
+      userData.triggers.forEach(trigger => {
+        const statusClass = trigger.is_enabled ? 'position-status' : 'position-status out-of-range';
+        const statusText = trigger.is_enabled ? 'Active' : 'Disabled';
+        const network = `<span class="network-badge">${trigger.network}</span>`;
+
+        html += `
+          <div class="position-card">
+            <div class="position-header">
+              <div class="position-pair">${trigger.type.replace('_', ' ')} ${network}</div>
+              <div class="${statusClass}">${statusText}</div>
+            </div>
+            <div style="font-size: 12px; color: #94a3b8; line-height: 1.6;">
+              Wallet: ${trigger.wallet_address.slice(0, 6)}...${trigger.wallet_address.slice(-4)}<br/>
+              ${trigger.type === 'health_factor'
+                ? `Threshold: ${trigger.threshold_value}`
+                : `Range: [${trigger.tick_lower}, ${trigger.tick_upper}]`}
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Main tabs
+    document.querySelectorAll('.main-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`${tab}-tab`).classList.add('active');
       });
     });
 
-    // Network switching
-    document.querySelectorAll('.network-btn').forEach(btn => {
+    // Network tabs
+    document.querySelectorAll('.network-tab').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.network-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentNetwork = btn.dataset.network;
-        if (currentWallet) loadWalletData(currentWallet, currentNetwork);
+        if (currentWallet) loadPortfolio(currentWallet, currentNetwork);
       });
     });
 
-    // Wallet input
-    document.getElementById('wallet-input').addEventListener('change', (e) => {
-      currentWallet = e.target.value.trim();
-      if (currentWallet) loadWalletData(currentWallet, currentNetwork);
+    // Search button
+    document.getElementById('search-btn').addEventListener('click', () => {
+      const address = document.getElementById('wallet-input').value.trim();
+      if (address) {
+        currentWallet = address;
+        loadPortfolio(address, currentNetwork);
+      }
     });
 
-    async function loadWalletData(address, network) {
-      showLoading('wallet-content');
-      showLoading('lp-content');
-      showLoading('lending-content');
+    // Wallet input enter
+    document.getElementById('wallet-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('search-btn').click();
+      }
+    });
+
+    // Trigger type change
+    document.getElementById('trigger-type').addEventListener('change', (e) => {
+      const isHF = e.target.value === 'health_factor';
+      document.getElementById('hf-fields').style.display = isHF ? 'block' : 'none';
+      document.getElementById('tick-fields').style.display = isHF ? 'none' : 'block';
+    });
+
+    async function loadPortfolio(address, network) {
+      const container = document.getElementById('portfolio-content');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading portfolio...</div></div>';
 
       try {
         const [wallet, lp, lending] = await Promise.all([
@@ -421,161 +646,130 @@
           fetch(`${API_BASE}/lending/${address}?network=${network}`).then(r => r.json()),
         ]);
 
-        renderWallet(wallet);
-        renderLP(lp);
-        renderLending(lending);
+        let html = '';
+
+        // Balances
+        if (wallet.balances && (wallet.balances.native || wallet.balances.tokens.length > 0)) {
+          html += '<div class="card"><div class="card-title">💰 Wallet</div>';
+          if (wallet.balances.native) {
+            html += `
+              <div class="token-row">
+                <span class="token-symbol">${wallet.balances.native.symbol}</span>
+                <span class="token-balance">${parseFloat(wallet.balances.native.balance).toFixed(4)}</span>
+              </div>
+            `;
+          }
+          wallet.balances.tokens.forEach(token => {
+            html += `
+              <div class="token-row">
+                <span class="token-symbol">${token.symbol}</span>
+                <span class="token-balance">${parseFloat(token.balance).toFixed(4)}</span>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+
+        // LP Positions
+        if (lp.positions && lp.positions.length > 0) {
+          html += '<div class="card"><div class="card-title">🏊 LP Positions</div>';
+          lp.positions.forEach(pos => {
+            html += `
+              <div class="position-card">
+                <div class="position-header">
+                  <div class="position-pair">Position #${pos.token_id}</div>
+                  <div class="position-status">Active</div>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8;">
+                  Liquidity: ${pos.liquidity}<br/>
+                  Range: [${pos.tick_lower}, ${pos.tick_upper}]
+                </div>
+              </div>
+            `;
+          });
+          html += '</div>';
+        }
+
+        // Lending
+        if (lending.lending && lending.lending.summary) {
+          const summary = lending.lending.summary;
+          const hf = parseFloat(summary.health_factor);
+          let hfClass = '';
+          if (hf < 1.2) hfClass = 'danger';
+          else if (hf < 1.5) hfClass = 'warning';
+
+          html += `
+            <div class="card">
+              <div class="card-title">🏦 Lending (Aave)</div>
+              <div class="health-factor ${hfClass}">
+                <span class="label">Health Factor</span>
+                <span class="value">${summary.health_factor || '∞'}</span>
+              </div>
+              <div class="token-row">
+                <span style="color: #94a3b8;">Total Collateral</span>
+                <span style="color: #86efac;">$${parseFloat(summary.total_collateral_usd).toFixed(2)}</span>
+              </div>
+              <div class="token-row">
+                <span style="color: #94a3b8;">Total Debt</span>
+                <span style="color: #fca5a5;">$${parseFloat(summary.total_debt_usd).toFixed(2)}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        if (!html) {
+          html = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📭</div>
+              <div class="empty-state-text">No positions found on ${network}</div>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html;
       } catch (err) {
-        console.error('Error loading data:', err);
-        showError('wallet-content', 'Failed to load data');
-      }
-    }
-
-    function showLoading(containerId) {
-      document.getElementById(containerId).innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          <div>Loading...</div>
-        </div>
-      `;
-    }
-
-    function showError(containerId, message) {
-      document.getElementById(containerId).innerHTML = `
-        <div class="empty-state">
-          <div class="empty-state-icon">⚠️</div>
-          <div>${message}</div>
-        </div>
-      `;
-    }
-
-    function renderWallet(data) {
-      const container = document.getElementById('wallet-content');
-      const balances = data.balances;
-
-      if (!balances || (!balances.native && balances.tokens.length === 0)) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">👛</div>
-            <div>No assets found</div>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '<div class="card"><div class="card-title">Balances</div>';
-
-      if (balances.native) {
-        html += `
-          <div class="token-row">
-            <div class="token-info">
-              <span class="token-symbol">${balances.native.symbol}</span>
-            </div>
-            <div class="token-balance">${parseFloat(balances.native.balance).toFixed(4)}</div>
+            <div class="empty-state-icon">⚠️</div>
+            <div class="empty-state-text">Error loading data: ${err.message}</div>
           </div>
         `;
       }
-
-      balances.tokens.forEach(token => {
-        html += `
-          <div class="token-row">
-            <div class="token-info">
-              <span class="token-symbol">${token.symbol}</span>
-            </div>
-            <div class="token-balance">${parseFloat(token.balance).toFixed(4)}</div>
-          </div>
-        `;
-      });
-
-      html += '</div>';
-      container.innerHTML = html;
     }
 
-    function renderLP(data) {
-      const container = document.getElementById('lp-content');
-      const positions = data.positions || [];
+    // Save trigger
+    document.getElementById('save-trigger').addEventListener('click', () => {
+      const type = document.getElementById('trigger-type').value;
+      const wallet = document.getElementById('trigger-wallet').value.trim() || currentWallet;
+      const network = document.getElementById('trigger-network').value;
 
-      if (positions.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">🏊</div>
-            <div>No LP positions found</div>
-          </div>
-        `;
-        return;
-      }
-
-      let html = '';
-      positions.forEach(pos => {
-        html += `
-          <div class="position-card">
-            <div class="position-header">
-              <div class="position-pair">LP #${pos.token_id}</div>
-              <div class="position-status">Active</div>
-            </div>
-            <div style="font-size: 12px; color: #94a3b8;">
-              Liquidity: ${pos.liquidity}<br/>
-              Range: [${pos.tick_lower}, ${pos.tick_upper}]
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-    }
-
-    function renderLending(data) {
-      const container = document.getElementById('lending-content');
-      const lending = data.lending;
-
-      if (!lending) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">🏦</div>
-            <div>No lending positions found</div>
-          </div>
-        `;
-        return;
-      }
-
-      const summary = lending.summary;
-      const hf = parseFloat(summary.health_factor);
-      let hfClass = '';
-      if (hf < 1.2) hfClass = 'danger';
-      else if (hf < 1.5) hfClass = 'warning';
-
-      let html = `
-        <div class="card">
-          <div class="card-title">Aave Position</div>
-          <div class="health-factor ${hfClass}">
-            <span class="label">Health Factor</span>
-            <span class="value">${summary.health_factor || 'N/A'}</span>
-          </div>
-          <div class="token-row">
-            <span style="color: #94a3b8;">Total Collateral</span>
-            <span style="color: #86efac;">$${parseFloat(summary.total_collateral_usd).toFixed(2)}</span>
-          </div>
-          <div class="token-row">
-            <span style="color: #94a3b8;">Total Debt</span>
-            <span style="color: #fca5a5;">$${parseFloat(summary.total_debt_usd).toFixed(2)}</span>
-          </div>
-        </div>
-      `;
-
-      container.innerHTML = html;
-    }
-
-    // Trigger saving
-    document.getElementById('save-hf-trigger').addEventListener('click', () => {
-      const payload = {
-        type: 'health_factor',
-        wallet: document.getElementById('hf-wallet').value.trim(),
-        network: document.getElementById('hf-network').value,
-        threshold: parseFloat(document.getElementById('hf-threshold').value),
-        aavePoolAddress: document.getElementById('hf-pool').value.trim(),
+      let payload = {
+        type: type,
+        wallet: wallet,
+        network: network,
       };
 
-      if (!payload.wallet || !payload.aavePoolAddress || !payload.threshold) {
-        alert('Please fill all fields');
+      if (type === 'health_factor') {
+        payload.aavePoolAddress = document.getElementById('aave-pool').value.trim();
+        payload.threshold = parseFloat(document.getElementById('hf-threshold').value);
+
+        if (!payload.aavePoolAddress || !payload.threshold) {
+          alert('Please fill all fields');
+          return;
+        }
+      } else {
+        payload.poolAddress = document.getElementById('pool-address').value.trim();
+        payload.tickLower = parseInt(document.getElementById('tick-lower').value);
+        payload.tickUpper = parseInt(document.getElementById('tick-upper').value);
+
+        if (!payload.poolAddress || isNaN(payload.tickLower) || isNaN(payload.tickUpper)) {
+          alert('Please fill all fields');
+          return;
+        }
+      }
+
+      if (!wallet) {
+        alert('Please enter a wallet address');
         return;
       }
 
@@ -583,7 +777,11 @@
       if (tgWebApp) {
         try {
           tgWebApp.sendData(JSON.stringify(payload));
-          alert('✓ Trigger saved!');
+          alert('✅ Alert saved!');
+
+          setTimeout(() => {
+            if (telegramUserId) loadUserData(telegramUserId);
+          }, 1000);
         } catch (err) {
           alert(`Error: ${err.message}`);
         }
