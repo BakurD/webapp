@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeFi Alerts Tracker</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      color: #e2e8f0;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(100, 116, 139, 0.2);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.5);
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      color: #f8fafc;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #6366f1;
+      background: rgba(15, 23, 42, 0.8);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    input::placeholder {
+      color: #64748b;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      height: 6px;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+
+    .value-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .value-display .number {
+      color: #6366f1;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .hint {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .status.success {
+      background: rgba(34, 197, 94, 0.1);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      border-color: #6366f1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 DeFi Alerts</h1>
+      <p>Настройте мониторинг ваших позиций</p>
+    </div>
+
+    <div class="card">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="health">Health Factor</button>
+        <button class="tab-btn" data-tab="tick">Tick Range</button>
+      </div>
+
+      <div id="health-tab">
+        <div class="section">
+          <label for="wallet-hf">Адрес кошелька</label>
+          <input id="wallet-hf" type="text" placeholder="0x742d35Cc6634C0532925a3b844Bc9e7595f42bE..." />
+          <p class="hint">Адрес вашего кошелька для мониторинга</p>
+        </div>
+
+        <div class="section">
+          <label for="aave-pool-hf">Адрес Aave Lending Pool</label>
+          <input id="aave-pool-hf" type="text" placeholder="0x794a61358D6845594F94dc1DB02A252b5b4814aD" />
+          <p class="hint">Адрес контракта Aave Pool для вашей сети</p>
+        </div>
+
+        <div class="section">
+          <label for="network-hf">Сеть</label>
+          <select id="network-hf">
+            <option value="ethereum">Ethereum</option>
+            <option value="base" selected>Base</option>
+            <option value="arbitrum">Arbitrum</option>
+            <option value="polygon">Polygon</option>
+          </select>
+        </div>
+
+        <div class="section">
+          <label for="health-threshold">Порог Health Factor</label>
+          <input id="health-threshold" type="range" min="105" max="300" value="130" step="5" />
+          <div class="value-display">
+            <span>Алерт при значении ниже:</span>
+            <span class="number"><span id="health-value">1.30</span></span>
+          </div>
+          <p class="hint">🔴 Чем ниже значение, тем выше риск ликвидации. Рекомендуется 1.5+</p>
+        </div>
+
+        <button id="save-health">💾 Сохранить триггер Health Factor</button>
+      </div>
+
+      <div id="tick-tab" style="display: none;">
+        <div class="section">
+          <label for="pool-address">Адрес пула Uniswap v3</label>
+          <input id="pool-address" type="text" placeholder="0x..." />
+        </div>
+
+        <div class="section">
+          <label for="network-tick">Сеть</label>
+          <select id="network-tick">
+            <option value="ethereum">Ethereum</option>
+            <option value="base">Base</option>
+            <option value="arbitrum">Arbitrum</option>
+          </select>
+        </div>
+
+        <div class="section">
+          <label for="tick-lower">Tick Lower</label>
+          <input id="tick-lower" type="number" placeholder="-200000" />
+          <p class="hint">Нижняя граница диапазона ликвидности</p>
+        </div>
+
+        <div class="section">
+          <label for="tick-upper">Tick Upper</label>
+          <input id="tick-upper" type="number" placeholder="200000" />
+          <p class="hint">Верхняя граница диапазона ликвидности</p>
+        </div>
+
+        <button id="save-tick">💾 Сохранить триггер Tick Range</button>
+      </div>
+    </div>
+
+    <div id="status-message" style="display: none;"></div>
+  </div>
+
+  <script>
+    // Инициализация Telegram WebApp API (если доступно сразу)
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand(); // Разворачиваем окно на максимум
+    }
+
+    // Хелпер для API запросов с ngrok заголовком
+    async function apiRequest(url, options = {}) {
+      const headers = {
+        'ngrok-skip-browser-warning': 'true',
+        'User-Agent': 'TelegramBot',
+        ...options.headers
+      };
+      return fetch(url, { ...options, headers });
+    }
+
+    // Переключение вкладок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('health-tab').style.display = tab === 'health' ? 'block' : 'none';
+        document.getElementById('tick-tab').style.display = tab === 'tick' ? 'block' : 'none';
+      });
+    });
+
+    // Обработка ползунка Health Factor
+    const healthRange = document.getElementById('health-threshold');
+    const healthValue = document.getElementById('health-value');
+    healthRange.addEventListener('input', () => {
+      healthValue.textContent = (healthRange.value / 100).toFixed(2);
+    });
+
+    // Хелпер вывода статусных сообщений
+    function showStatus(message, isSuccess) {
+      const statusEl = document.getElementById('status-message');
+      statusEl.textContent = message;
+      statusEl.className = `status ${isSuccess ? 'success' : 'error'}`;
+      statusEl.style.display = 'block';
+      setTimeout(() => {
+        statusEl.style.display = 'none';
+      }, 4000);
+    }
+
+    // Сохранение триггера Health Factor
+    document.getElementById('save-health').addEventListener('click', () => {
+      const payload = {
+        type: 'health_factor',
+        wallet: document.getElementById('wallet-hf').value.trim(),
+        network: document.getElementById('network-hf').value,
+        threshold: parseFloat(document.getElementById('health-threshold').value) / 100,
+        aavePoolAddress: document.getElementById('aave-pool-hf').value.trim(),
+      };
+
+      if (!payload.wallet || !payload.aavePoolAddress) {
+        showStatus('Укажите адрес кошелька и адрес Aave Pool', false);
+        return;
+      }
+
+      // Безопасное извлечение WebApp из глобального контекста
+      const tgWebApp = window.Telegram ? window.Telegram.WebApp : null;
+
+      if (tgWebApp) {
+        try {
+          tgWebApp.sendData(JSON.stringify(payload));
+          showStatus('✓ Триггер отправлен боту', true);
+        } catch (err) {
+          showStatus(`Ошибка отправки: ${err.message}`, false);
+        }
+      } else {
+        // Дебаг-алерт для Telegram Desktop
+        alert(`Дебаг: window.Telegram = ${typeof window.Telegram}, WebApp = ${window.Telegram ? typeof window.Telegram.WebApp : 'undefined'}`);
+        showStatus('WebApp недоступен', false);
+      }
+    });
+
+    // Сохранение триггера Tick Range
+    document.getElementById('save-tick').addEventListener('click', () => {
+      const payload = {
+        type: 'tick_range',
+        poolAddress: document.getElementById('pool-address').value.trim(),
+        network: document.getElementById('network-tick').value,
+        tickLower: parseInt(document.getElementById('tick-lower').value, 10),
+        tickUpper: parseInt(document.getElementById('tick-upper').value, 10),
+      };
+
+      if (!payload.poolAddress || isNaN(payload.tickLower) || isNaN(payload.tickUpper)) {
+        showStatus('Заполните все поля', false);
+        return;
+      }
+
+      const tgWebApp = window.Telegram ? window.Telegram.WebApp : null;
+
+      if (tgWebApp) {
+        try {
+          tgWebApp.sendData(JSON.stringify(payload));
+          showStatus('✓ Триггер отправлен боту', true);
+        } catch (err) {
+          showStatus(`Ошибка отправки: ${err.message}`, false);
+        }
+      } else {
+        alert(`Дебаг: window.Telegram = ${typeof window.Telegram}, WebApp = ${window.Telegram ? typeof window.Telegram.WebApp : 'undefined'}`);
+        showStatus('WebApp недоступен', false);
+      }
+    });
+  </script>
+</body>
+</html>
